@@ -1,7 +1,14 @@
 # audionamix.js
-Audionamix Audio SDK Node.js
+[Audionamix](http://audionamix.com/) Audio SDK Node.js
 
 # How to use this client
+You have to specifiy your access key and secret environment variables to use this client. See http://audionamix.com/ for more info.
+
+```
+$ export AUDIONAMIX_ACCESS_KEY=xxxxxx
+$ export AUDIONAMIX_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
 Upload a wave file
 ```
 $ node upload.js sample.wav 
