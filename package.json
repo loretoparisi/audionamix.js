@@ -1,0 +1,35 @@
+{
+  "name": "audionamix.js",
+  "description": "Audionamix SDK Node.js",
+  "version": "1.0.0",
+  "homepage": "https://github.com/loretoparisi/audionamix.js",
+ 	"author": {
+    "name": "Loreto Parisi",
+    "email": "loretoparisi@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:loretoparisi/audionamix.js"
+  },
+  "bugs": {
+    "url": "https://github.com/loretoparisi/audionamix.js/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/loretoparisi/audionamix.js/blob/master/LICENSE.md"
+    }
+  ],
+  "main": "audionamix",
+  "engines": {
+    "node": "*"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {},
+  "keywords": [],
+  "dependencies": {
+    "request": "^2.67.0"
+  }
+}
