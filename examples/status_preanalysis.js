@@ -22,22 +22,30 @@ var aud = new Audionamix({
     accessSecret: process.env.AUDIONAMIX_SECRET
 });
 
-// start separation: input_file_id
+// check status: "id"
 var arguments = process.argv.slice(2);
 var fileId=arguments[0];
-var configurationId=arguments[1];
 if( !fileId ) {
-	console.error("Usage: node separation fileId [configurationId]");
+	console.error("Usage: node preanalysis_status fileId poll_interval_seconds");
 	process.exit(1);
 }
-if( configurationId ) {
-	console.error("Configuration will be " + configurationId);
-}
-aud.separation({ file_id : fileId, config_id : configurationId }, function(error, results) {
-    if(error) 
-        console.error("%s", error.toString() );
-    else 
-        console.log("separation", results);
-});
+var timeInterval=arguments[1] || 5;
+
+// start status check
+console.log("check status every %d secs.", timeInterval);
+var status;
+status=setInterval(function() {
+    aud.status({ file_id : fileId }, Audionamix.Status.PreAnalysis
+    , function(error, results) {
+        if(error) 
+            console.error("%s", error.toString() );
+        else {
+            console.log("%s \nTo stop press Ctrl-C\nstatus\n", (new Date()),results);
+            if (results.is_finished || parseInt( results.status ) == 100 ) {
+                clearInterval( status );    
+            }
+        }
+    });
+}, timeInterval * 1000);
 
 }).call(this);

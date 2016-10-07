@@ -1,7 +1,7 @@
 {
   "name": "audionamix.js",
   "description": "Audionamix SDK Node.js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://github.com/loretoparisi/audionamix.js",
  	"author": {
     "name": "Loreto Parisi",
@@ -30,6 +30,6 @@
   "devDependencies": {},
   "keywords": [],
   "dependencies": {
-    "request": "^2.67.0"
+    "request": "^2.75.0"
   }
 }

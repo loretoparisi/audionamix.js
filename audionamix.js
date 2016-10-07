@@ -14,6 +14,7 @@ var request = require('request');
 
 var API = require('./lib/api');
 var Util = require('./lib/util');
+var FileUtil = require('./lib/fileutil');
 
 var Audionamix;
 Audionamix = (function() {
@@ -26,9 +27,10 @@ Audionamix = (function() {
 
         // default options
         this._options = {
+            clientId : "Musixmatch",
             // to be used in header: "Authorization: ApiKey username:api_key"
-            accessKey : process.env.AUDIONAMIX_ACCESS_KEY,
-            accessSecret : process.env.AUDIONAMIX_SECRET,
+            accessKey : process.env.AUDIONAMIX_ACCESS_KEY || '',
+            accessSecret : process.env.AUDIONAMIX_SECRET || '',
             host : "trax.audionamix.com",
             port : 80,
             endpoint: '/api/v1',
@@ -53,7 +55,7 @@ Audionamix = (function() {
      * @example
       cURL 
       curl -X POST "https://trax.audionamix.com/api/v1/audiofile/" -F file=@path/to/ file.wav 
-      curl -s -X GET -H "Authorization: ApiKey YOUR_ACCESS_KEY:YOUR_ACCESS_SECRET" -X POST "https://trax.audionamix.com/api/v1/audiofile/" -F file=@./sample.wav | json_pp
+      curl -s -X GET -H "Authorization: ApiKey $AUDIONAMIX_ACCESS_KEY:$AUDIONAMIX_SECRET" -X POST "https://trax.audionamix.com/api/v1/audiofile/" -F file=@./sample.wav | json_pp
      * 
      * JSON Response
       
@@ -96,6 +98,7 @@ Audionamix = (function() {
             file : new fs.createReadStream(filePath) // fs.createReadStream(filePath) | new Buffer(bitmap)
         };
         var headers = {
+          "User-Agent" : this._options.clientId,
           "Accept" : "*/*",
           "Authorization" : "ApiKey "+this._options.accessKey+":"+this._options.accessSecret
         };
@@ -126,15 +129,61 @@ Audionamix = (function() {
     }//upload
 
     /**
+     * Audio file pre-analysis
+     * 
+     * To start a pre-analysis, you need to do a GET request to the preanalysis/start subresource 
+     * with the file_id URL parameter set to the audiofile identifier. 
+     * This will start a pre-analysis as a background job. The response's JSON id attribute is the 
+     * identifier of the preanalysis and will be * * used during next step.
+     * 
+     * @params = { file_id := number, alog := string, baseline := string }
+     * 
+     * where 
+     * file_id the input file id
+     * algo = csnt (consonant detection) | pitch (pitch detection); defaults=pitch
+     * baseline = v1 | v3, version of the algorithm, best is v3;  defaults=v1
+     * 
+     * @example
+     * curl -v -H "Authorization: ApiKey $AUDIONAMIX_ACCESS_KEY:$AUDIONAMIX_SECRET" -X GET "https://trax.audionamix.com/api/v1/preanalysis/start/?file_id=$AUDIOFILE_ID" | json_pp
+     */
+    Audionamix.prototype.preanalysis = function(params,callback) {
+      var self=this;
+      var headers = {
+          "User-Agent" : this._options.clientId,
+          "Accept" : "*/*",
+          "Authorization" : "ApiKey "+this._options.accessKey+":"+this._options.accessSecret
+      };
+      var extras = {
+        algo : 'pitch',
+        baseline : 'v3'
+      };
+      for (var attrname in params) { extras[attrname] = params[attrname]; }
+      
+      var url = this._options.endpoint+'/preanalysis/start/';
+      this.api.RequestGet(url, headers, extras
+        , function(response) { // success
+          return callback(null,response)
+        }
+        , function(error) { // error
+          return callback(error);
+        }
+        , function(error) { // timeout
+          return callback( new Error('request timed out') )
+        });
+    }//preanalysis
+
+    /**
      * Start audio separation process
      * 
      * To start a separation, you need to do a GET request to the separation resource with file_id URL parameter set to the audio file identifier that you received above. 
      * This will start a separation as a background job. The response's JSON id attribute is the separation identifier and will be used during next step.
      * @param params Request options: { file_id : int } id of the uploaded resource
      * @example
-     * cURL curl -X GET "https://trax.audionamix.com/api/v1/separation/?file_id=audiofile_id"
+     * curl -v -H "Authorization: ApiKey $AUDIONAMIX_ACCESS_KEY:$AUDIONAMIX_SECRET" -X GET "https://trax.audionamix.com/api/v1/separation/?file_id=$AUDIOFILE_ID" | json_pp
      * 
      * JSON Response
+     
+     * with file_id
      
       {
         "extracted_file_id": 284347,
@@ -144,10 +193,22 @@ Audionamix = (function() {
         "status": 1
       }
 
+      * with file_id and config_id
+
+      { 
+        configuration_id: 334785,
+        extracted_file_id: 316525,
+        id: 121318,
+        input_file_id: 316517,
+        resource_uri: '/api/v1/separation/121318/',
+        status: 1 
+      }
+
      */
     Audionamix.prototype.separation = function(params,callback) {
       var self=this;
       var headers = {
+          "User-Agent" : this._options.clientId,
           "Accept" : "*/*",
           "Authorization" : "ApiKey "+this._options.accessKey+":"+this._options.accessSecret
       };
@@ -175,7 +236,7 @@ Audionamix = (function() {
      * 
      * @param params Request options: { file_id : int } id of the uploaded resource
      * @example
-     * cURL curl -X GET https://trax.audionamix.com/api/v1/audiofile/audiofile_id/
+     * curl -v -H "Authorization: ApiKey $AUDIONAMIX_ACCESS_KEY:$AUDIONAMIX_SECRET" -X GET https://trax.audionamix.com/api/v1/audiofile/$AUDIOFILE_ID/ | json_pp
      * 
      * JSON Response (no file_id parameter)
      
@@ -218,6 +279,7 @@ Audionamix = (function() {
     Audionamix.prototype.files = function(params,callback) {
       var self=this;
       var headers = {
+          "User-Agent" : this._options.clientId,
           "Accept" : "*/*",
           "Authorization" : "ApiKey "+this._options.accessKey+":"+this._options.accessSecret
       };
@@ -251,7 +313,7 @@ Audionamix = (function() {
      * 
      * @param params Request options: { file_id : int } id of the uploaded resource
      * @example
-     * cURL curl -X GET https://trax.audionamix.com/api/v1/separation/separation_id/
+     * curl -v -H "Authorization: ApiKey $AUDIONAMIX_ACCESS_KEY:$AUDIONAMIX_SECRET" -X GET https://trax.audionamix.com/api/v1/separation/$SEPARATION_ID/ | json_pp
      * 
      * JSON Response (no file_id parameter)
      
@@ -263,10 +325,22 @@ Audionamix = (function() {
         "status": 100
       }
 
+      * When a config_id was specified
+
+        { 
+          configuration_id: 334785,
+          extracted_file_id: 316525,
+          id: 121318,
+          input_file_id: 316517,
+          resource_uri: '/api/v1/separation/121318/',
+          status: 100 
+        }
+
      */
-    Audionamix.prototype.status = function(params,callback) {
+    Audionamix.prototype.status = function(params,status,callback) {
       var self=this;
       var headers = {
+          "User-Agent" : this._options.clientId,
           "Accept" : "*/*",
           "Authorization" : "ApiKey "+this._options.accessKey+":"+this._options.accessSecret
       };
@@ -275,7 +349,7 @@ Audionamix = (function() {
       };
       for (var attrname in params) { extras[attrname] = params[attrname]; }
 
-      var url = this._options.endpoint+'/separation/';
+      var url = this._options.endpoint+'/'+status;
       if(params.file_id) {
         url += params.file_id+"/"; 
         delete extras.file_id;
@@ -301,11 +375,12 @@ Audionamix = (function() {
      * @see https://github.com/request/request
      * @example
      * cURL 
-     * curl -X GET "https://trax.audionamix.com/api/v1/audiofile/?pk=extracted_audiofile_id" -L -o path/to/result.wav
+     * curl -v -H "Authorization: ApiKey $AUDIONAMIX_ACCESS_KEY:$AUDIONAMIX_SECRET" -X GET "https://trax.audionamix.com/api/v1/audiofile/?pk=$EXTRACTED_AUDIOFILE_ID" -L -o path/to/result_$EXTRACTED_AUDIOFILE_ID.wav
      */
     Audionamix.prototype.download = function(params,path,callback) {
       var self=this;
       var headers = {
+          "User-Agent" : this._options.clientId,
           "Accept" : "*/*",
           "Authorization" : "ApiKey "+this._options.accessKey+":"+this._options.accessSecret
       };
@@ -321,7 +396,12 @@ Audionamix = (function() {
       if( queryString ) {
         url+="?"+queryString;
       }
-      var req = request(url);
+      var options={};
+      options.url=url;
+      options.followAllRedirects=true;
+      options.maxRedirects = 10;
+
+      var req = request(options);
       req.on('error', function(err) {
         return callback(error);
       })
@@ -333,6 +413,149 @@ Audionamix = (function() {
         })
       });
     }//download
+
+    /**
+     * Download annotation file
+     * 
+     * To download the resulting annotation file, you need to do a GET request to the result subresource of the preanalysis you created. 
+     * The result is a JSON file containing a lot a numerical data and a few parameters that you can edit.
+     * @param params { preanalysis_id := number }
+     * @uses request 
+     * @see https://github.com/request/request
+     * @example
+     * cURL 
+     * curl -v -H "Authorization: ApiKey $AUDIONAMIX_ACCESS_KEY:$AUDIONAMIX_SECRET" -X GET "https://trax.audionamix.com/api/v1/preanalysis/$PREANALYSIS_ID/result/" -L -o path/to/annotation_$PREANALYSIS_ID.json
+     */
+    Audionamix.prototype.annotation = function(params,path,callback) {
+      var self=this;
+      var headers = {
+          "User-Agent" : this._options.clientId,
+          "Accept" : "*/*",
+          "Authorization" : "ApiKey "+this._options.accessKey+":"+this._options.accessSecret
+      };
+      var extras = {
+        
+      };
+      for (var attrname in params) { extras[attrname] = params[attrname]; }
+      
+      var url=this._options.secure?'https://':'http://';
+      url += this._options.host + this._options.endpoint+'/preanalysis/';
+      if(params.preanalysis_id) {
+        url += params.preanalysis_id+"/result/";
+      }
+
+      var options={};
+      options.url=url;
+      options.followAllRedirects=true;
+      options.maxRedirects = 10;
+      options.headers = headers;
+
+      //options.removeRefererHeader=true;
+      /*options.followRedirect = function(response) {
+        var url = require('url');
+        var _from = response.request.href;
+        var _to = url.resolve(response.headers.location, response.request.href);
+        return true;
+      };*/
+
+      if(self._options.debug) console.log(options)
+      
+      var req = request(options);
+      req.on('error', function(err) {
+        return callback(error);
+      })
+      req.on('response',  function (res) {
+        if(self._options.debug) {
+          console.log("Status code:",res.statusCode) // 200
+          console.log("Response headers", res.headers);
+        }
+        if( res.statusCode == 200 ) {
+          res.pipe(fs.createWriteStream(path) );
+        }
+        res.on( 'end', function() {
+          return callback(null,path);
+        })
+      });
+      
+    }//downloadAnnotation
+
+    /**
+     * You need to upload the configuration to TraxCloud, 
+     * using a POST request to the configuration resource with a JSON body being the configuration created at the previous step . 
+     * The response's JSON id attribute is the identifier of the configuration and will be used during next step.
+     * 
+     * @param params query string
+     * @param path annotation file path
+     * * @example
+     * cURL 
+     * curl -H "Authorization: ApiKey $AUDIONAMIX_ACCESS_KEY:$AUDIONAMIX_SECRET" -X POST "https://trax.audionamix.com/api/v1/configuration/" -H "Content-Type:application/json" -d @path/to/config.json
+     *
+     * Response format:
+     * 
+        {
+            big_dipper: true,
+            breathiness: false,
+            consonants_activity: '[]',
+            extra_parameters_patch: '',
+            high_quality: false,
+            id: 334785,
+            maximum_frequency: -1,
+            minimum_frequency: -1,
+            panning_vector: null,
+            pitch_annotation: '[]',
+            ,preference_name: null,
+            processed_segments: null,
+            rectangle_annotation: '[]',
+            resource_uri: '/api/v1/configuration/334785/',
+            reverb_time: 0,
+            voice_activity: null
+        }
+     */
+    Audionamix.prototype.configuration = function(params,path,callback) {
+      var self=this;
+      var headers = {
+          "User-Agent" : this._options.clientId,
+          "Content-Type" : "application/json",
+          "Accept" : "*/*",
+          "Authorization" : "ApiKey "+this._options.accessKey+":"+this._options.accessSecret
+      };
+      var extras = {
+        
+      };
+      for (var attrname in params) { extras[attrname] = params[attrname]; }
+
+      // read file as json body
+      var body=FileUtil.readFileSync(path,true);
+      if(!body) {
+        return callback( new Error('body error') )  
+      }
+      var url = this._options.endpoint+'/configuration/';
+      this.api.RequestPost(url, headers, extras, body
+        , function(response) { // success
+          return callback(null,response)
+        }
+        , function(error) { // error
+          return callback(error);
+        }
+        , function(error) { // timeout
+          return callback( new Error('request timed out') )
+          });
+    }//configuration
+
+    /**
+     * API background job statuses
+     */
+    Audionamix.Status = {};
+
+    /**
+     * the progress of the preanalysis job
+     */
+    Audionamix.Status.PreAnalysis = 'preanalysis/';
+
+    /**
+     * the progress of the separation job
+     */
+    Audionamix.Status.Separation = 'separation/';
     
     return Audionamix;
 

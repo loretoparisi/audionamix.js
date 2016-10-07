@@ -22,22 +22,20 @@ var aud = new Audionamix({
     accessSecret: process.env.AUDIONAMIX_SECRET
 });
 
-// start separation: input_file_id
+// download file: "extracted_file_id"
 var arguments = process.argv.slice(2);
-var fileId=arguments[0];
-var configurationId=arguments[1];
-if( !fileId ) {
-	console.error("Usage: node separation fileId [configurationId]");
+var preanalysis_id=arguments[0];
+if( !preanalysis_id ) {
+	console.error("Usage: upload preanalysisId");
 	process.exit(1);
 }
-if( configurationId ) {
-	console.error("Configuration will be " + configurationId);
-}
-aud.separation({ file_id : fileId, config_id : configurationId }, function(error, results) {
+aud.annotation({ preanalysis_id : preanalysis_id }, 
+    './annotation_'+preanalysis_id+'.json', function(error, results) {
     if(error) 
         console.error("%s", error.toString() );
     else 
-        console.log("separation", results);
+        console.log("annotation", results);
+            
 });
 
 }).call(this);

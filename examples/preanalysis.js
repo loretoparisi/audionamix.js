@@ -25,19 +25,19 @@ var aud = new Audionamix({
 // start separation: input_file_id
 var arguments = process.argv.slice(2);
 var fileId=arguments[0];
-var configurationId=arguments[1];
+var algo=arguments[1]||'';
 if( !fileId ) {
-	console.error("Usage: node separation fileId [configurationId]");
+	console.error("Usage: node preanalysis file_id [algorithm]\nalgorithm = pitch (defaults) |csnt");
 	process.exit(1);
 }
-if( configurationId ) {
-	console.error("Configuration will be " + configurationId);
+if( algo ) {
+	console.error("Algorithm will be " + algo);
 }
-aud.separation({ file_id : fileId, config_id : configurationId }, function(error, results) {
+aud.preanalysis({ file_id : fileId, algo : algo }, function(error, results) {
     if(error) 
         console.error("%s", error.toString() );
     else 
-        console.log("separation", results);
+        console.log("preanalysis", results);
 });
 
 }).call(this);

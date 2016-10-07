@@ -22,22 +22,19 @@ var aud = new Audionamix({
     accessSecret: process.env.AUDIONAMIX_SECRET
 });
 
-// start separation: input_file_id
+// upload audio file
 var arguments = process.argv.slice(2);
-var fileId=arguments[0];
-var configurationId=arguments[1];
-if( !fileId ) {
-	console.error("Usage: node separation fileId [configurationId]");
+var songFile=arguments[0];
+if( !songFile ) {
+	console.error("Usage: configuration fileName");
 	process.exit(1);
 }
-if( configurationId ) {
-	console.error("Configuration will be " + configurationId);
-}
-aud.separation({ file_id : fileId, config_id : configurationId }, function(error, results) {
+console.log("Uploading...",songFile);
+aud.configuration({}, songFile, function(error, results) {
     if(error) 
         console.error("%s", error.toString() );
     else 
-        console.log("separation", results);
+        console.log("configuration", results);
 });
 
 }).call(this);

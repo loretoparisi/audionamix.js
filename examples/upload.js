@@ -5,14 +5,24 @@
 */
 (function() {
 
-// put this in the sdk headers
+if (!process.env.AUDIONAMIX_ACCESS_KEY) {
+    console.warn("Please set access key:\nexport AUDIONAMIX_ACCESS_KEY=xxxxxxxxxx")    
+    process.exit(1);
+}
+
+if (!process.env.AUDIONAMIX_SECRET) {
+    console.warn("Please set secret:\nexport AUDIONAMIX_SECRET=xxxxxxxxxx")    
+    process.exit(1);
+}
+
 var Audionamix = require('../audionamix');
 var aud = new Audionamix({
-    debug : true
+    debug: true,
+    accessKey: process.env.AUDIONAMIX_ACCESS_KEY,
+    accessSecret: process.env.AUDIONAMIX_SECRET
 });
 
 // upload audio file
-//
 var arguments = process.argv.slice(2);
 var songFile=arguments[0];
 if( !songFile ) {

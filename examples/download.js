@@ -5,18 +5,28 @@
 */
 (function() {
 
+if (!process.env.AUDIONAMIX_ACCESS_KEY) {
+    console.warn("Please set access key:\nexport AUDIONAMIX_ACCESS_KEY=xxxxxxxxxx")    
+    process.exit(1);
+}
 
-// put this in the sdk headers
+if (!process.env.AUDIONAMIX_SECRET) {
+    console.warn("Please set secret:\nexport AUDIONAMIX_SECRET=xxxxxxxxxx")    
+    process.exit(1);
+}
+
 var Audionamix = require('../audionamix');
 var aud = new Audionamix({
-    debug : true
+    debug: true,
+    accessKey: process.env.AUDIONAMIX_ACCESS_KEY,
+    accessSecret: process.env.AUDIONAMIX_SECRET
 });
 
 // download file: "extracted_file_id"
 var arguments = process.argv.slice(2);
 var pk=arguments[0];
 if( !pk ) {
-	console.error("Usage: upload fileId");
+	console.error("Usage: download extractedFileId");
 	process.exit(1);
 }
 aud.download({ pk : pk }, 
