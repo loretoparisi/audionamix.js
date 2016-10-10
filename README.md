@@ -194,7 +194,7 @@ status
 When the `status` is 100, download the separated wave file for the extrated file `id` specified in the response above
 
 ```
-$ node download.js 121318
-download ./sample_extracted_121318.wav
+$ node download.js 316525
+download ./sample_extracted_316525.wav
 ```
 
