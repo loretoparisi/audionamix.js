@@ -26,7 +26,7 @@ var aud = new Audionamix({
 var arguments = process.argv.slice(2);
 var fileId=arguments[0];
 if( !fileId ) {
-	console.error("Usage: node preanalysis_status fileId poll_interval_seconds");
+	console.error("Usage: node preanalysis_status fileId [poll_interval_seconds]");
 	process.exit(1);
 }
 var timeInterval=arguments[1] || 5;

@@ -42,6 +42,22 @@ Audionamix = (function() {
         for (var attrname in options) { this._options[attrname] = options[attrname]; }
 
         this.api = new API(this._options.host, this._options.port, 1000 * 10, this._options.secure, this._options.debug,true);
+
+        /**
+         * Promisify function
+         * @param fun function(Object,(Error,Object)) simple
+         * @param params object
+         * @return Promise
+         */
+        this.doCallP = function(fun,params) {
+            var self=this;
+            return new Promise((resolve, reject) => {
+                fun(params, (err, res) => {
+                  if(!err) return resolve(res) 
+                  else return reject(err);
+                });
+            });
+        } //doCallP
         
     }
 
@@ -400,13 +416,17 @@ Audionamix = (function() {
       options.url=url;
       options.followAllRedirects=true;
       options.maxRedirects = 10;
+      options.headers = headers;
 
       var req = request(options);
       req.on('error', function(err) {
         return callback(error);
       })
       req.on('response',  function (res) {
-        //var ext=res.headers['content-type'].split('-')[1];
+        if(self._options.debug) {
+          console.log("Status code:",res.statusCode) // 200
+          console.log("Response headers", res.headers);
+        }
         res.pipe(fs.createWriteStream(path) );
         res.on( 'end', function() {
           return callback(null,path);
@@ -477,7 +497,7 @@ Audionamix = (function() {
         })
       });
       
-    }//downloadAnnotation
+    }//annotation
 
     /**
      * You need to upload the configuration to TraxCloud, 
