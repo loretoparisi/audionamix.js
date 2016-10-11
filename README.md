@@ -147,6 +147,7 @@ var annotation2 = FileUtil.readFileSync(annotationFile2,true);
 for(var key in annotation2) {
     if( typeof(annotation1[key])!='undefined' ) annotation1[key] = annotation2[key];
 }
+FileUtil.writeToFileSync(configurationFile, JSON.stringify(annotation1));
 ```
 
 Upload the merged annotations file
