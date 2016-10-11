@@ -145,7 +145,7 @@ var FileUtil=require('../lib/fileutil');
 var annotation1 = FileUtil.readFileSync(annotationFile1,true);
 var annotation2 = FileUtil.readFileSync(annotationFile2,true);
 for(var key in annotation2) {
-    if( typeof(annotation1[key])!='undefined ) annotation1[key] = annotation2[key];
+    if( typeof(annotation1[key])!='undefined' ) annotation1[key] = annotation2[key];
 }
 ```
 
