@@ -1,7 +1,7 @@
 # audionamix.js
 [Audionamix](http://audionamix.com/) Audio SDK Node.js
 
-# How to use this client
+## How to use this client
 You have to specifiy your access key and secret environment variables to use this client. See http://audionamix.com/ for more info.
 
 ```
@@ -9,11 +9,11 @@ $ export AUDIONAMIX_ACCESS_KEY=xxxxxx
 $ export AUDIONAMIX_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-# A simple Workflow
+## A simple Workflow
 
 Upload a wave file
 ```
-$ node upload.js sample.wav 
+$ node upload sample.wav 
 Uploading... sample.wav
 upload { channel_number: null,
   duration: -1,
@@ -30,7 +30,7 @@ upload { channel_number: null,
 Start the separation process passing the audiofile `id` in the response above.
 
 ```
-$ node separation.js 314329
+$ node separation 314329
 separation { extracted_file_id: 314330,
   id: 120571,
   input_file_id: 314329,
@@ -57,7 +57,7 @@ download ./sample_extracted_314330.wav
 ```
 
 
-# Enhanced Workflow
+## Enhanced Workflow
 
 Upload the audio wave file
 
@@ -79,7 +79,7 @@ upload { channel_number: null,
 Launch a preanalysis with `pitch` algorithm for voice pitch detection
 
 ```
-$ node preanalysis.js 316517 pitch
+$ node preanalysis 316517 pitch
 Algorithm will be pitch
 preanalysis { id: 29446,
   is_finished: false,
@@ -90,7 +90,7 @@ preanalysis { id: 29446,
 Launch a preanalysis with `csnt` algorithm for voice consonants detection
 
 ```
-$ node preanalysis.js 316517 csnt
+$ node preanalysis 316517 csnt
 Algorithm will be csnt
 
 preanalysis { id: 29447,
@@ -102,7 +102,7 @@ preanalysis { id: 29447,
 Check the preanalysis status for these analysis
 
 ```
-$ node status_preanalysis.js 29446 5
+$ node status_preanalysis 29446 5
 check status every 5 secs.
 
 Fri Oct 07 2016 16:25:01 GMT+0200 (CEST) 
@@ -117,7 +117,7 @@ status
 and
 
 ```
-$ node status_preanalysis.js 29447 5
+$ node status_preanalysis 29447 5
 check status every 5 secs.
 
 Fri Oct 07 2016 16:25:27 GMT+0200 (CEST) 
@@ -153,7 +153,7 @@ FileUtil.writeToFileSync(configurationFile, JSON.stringify(annotation1));
 Upload the merged annotations file
 
 ```
-$ node configuration.js annotation_merged.json 
+$ node configuration annotation_merged.json 
 Uploading... annotation_merged.json
 configuration { big_dipper: true,
   breathiness: false,
@@ -175,7 +175,7 @@ configuration { big_dipper: true,
 Start the separation process for the file `id` obtained above and the configuration `id` of the previous json response
 
 ```
-$ node separation.js 316517 334785
+$ node separation 316517 334785
 Configuration will be 334785
 separation { configuration_id: 334785,
   extracted_file_id: 316525,
@@ -188,7 +188,7 @@ separation { configuration_id: 334785,
 Check the separation status for this separation id
 
 ```
-$ node status_separation.js 121318
+$ node status_separation 121318
 check status every 5 secs.
 
 Fri Oct 07 2016 16:38:12 GMT+0200 (CEST) 
@@ -205,7 +205,14 @@ status
 When the `status` is 100, download the separated wave file for the extrated file `id` specified in the response above
 
 ```
-$ node download.js 316525
+$ node download 316525
 download ./sample_extracted_316525.wav
 ```
 
+## Fully Automated Enhanced Workflow
+To run a fully automated enhanced worflow run the `workflow` example. The example will execute all steps from ehnanced workflow, performing both the preanalysis, downloading, merging and uploading the annotations files and downloading the extracted resulting file.
+To do this run command with input wave file and status poll interval in seconds (optional).
+
+```
+$ node workflow sample.wave 5
+```
