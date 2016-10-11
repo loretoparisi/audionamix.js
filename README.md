@@ -138,7 +138,17 @@ $ node annotation 29447
 annotation ./annotation_29447.json
 ```
 
-Merge the two json files in order to keep the keys (not overlapping) in it.
+Merge the two json files in order to keep the keys (not overlapping) in it like
+
+```javascript
+var FileUtil=require('../lib/fileutil');
+var annotation1 = FileUtil.readFileSync(annotationFile1,true);
+var annotation2 = FileUtil.readFileSync(annotationFile2,true);
+for(var key in annotation2) {
+    if( typeof(annotation1[key])!='undefined ) annotation1[key] = annotation2[key];
+}
+```
+
 Upload the merged annotations file
 
 ```
@@ -161,7 +171,7 @@ configuration { big_dipper: true,
   voice_activity: null }
 ```
 
-Start the separation process for the file `id` obtained above and the separataion `id` of the previous json response
+Start the separation process for the file `id` obtained above and the configuration `id` of the previous json response
 
 ```
 $ node separation.js 316517 334785
