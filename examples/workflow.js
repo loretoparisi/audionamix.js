@@ -30,21 +30,22 @@ var aud = new Audionamix({
 var arguments = process.argv.slice(2);
 var songId=arguments[0];
 var songFile=arguments[1];
-var timeInterval=arguments[2] || 5;
+var outputPath=arguments[2] || path.join(__dirname,'.');
+var timeInterval=arguments[3] || 5;
 
 if( !songId || !songFile ) {
     var disc="*** Audionamix client v1.0.0 ***\nhttps://github.com/loretoparisi/audionamix.js\n@@2016 Loreto Parisi (loretoparisi@gmail.com)";
-    disc=disc+"\n\nUsage: worflow fileId fileName [poll_interval_seconds]";
+    disc=disc+"\n\nUsage: worflow fileId filePath outputPath [poll_interval_seconds]";
     disc=disc+"\nfileId\t\tfile identifier useful for batch processing of multiple files";
-    disc=disc+"\nfileName\t\tfile absolute path";
+    disc=disc+"\nfilePath\t\tfile absolute path";
+    disc=disc+"\noutputPath\t\output files absolute path, defaults to script path";
     console.error(disc);
 	process.exit(1);
 }
 
-var pwd=path.join(__dirname,'.');
-var pwdSongId=path.join(pwd,songId);
+var pwdSongId=path.join(outputPath,songId);
 
-console.log("Workig directory:%s", pwd);
+console.log("Workig directory:%s", outputPath);
 console.log("Files wildcard:%s*", pwdSongId);
 
 if(!fs.existsSync(pwdSongId)) {
