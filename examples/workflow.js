@@ -5,6 +5,9 @@
 */
 (function() {
 
+var fs=require('fs');
+var path=require('path');
+
 if (!process.env.AUDIONAMIX_ACCESS_KEY) {
     console.warn("Please set access key:\nexport AUDIONAMIX_ACCESS_KEY=xxxxxxxxxx")    
     process.exit(1);
@@ -25,12 +28,27 @@ var aud = new Audionamix({
 
 // upload audio file
 var arguments = process.argv.slice(2);
-var songFile=arguments[0];
-var timeInterval=arguments[1] || 5;
+var songId=arguments[0];
+var songFile=arguments[1];
+var timeInterval=arguments[2] || 5;
 
-if( !songFile ) {
-	console.error("*** Audionamix client v1.0.0 ***\nhttps://github.com/loretoparisi/audionamix.js\n@@2016 Loreto Parisi (loretoparisi@gmail.com)\n\nUsage: worflow fileName [poll_interval_seconds]");
+if( !songId || !songFile ) {
+    var disc="*** Audionamix client v1.0.0 ***\nhttps://github.com/loretoparisi/audionamix.js\n@@2016 Loreto Parisi (loretoparisi@gmail.com)";
+    disc=disc+"\n\nUsage: worflow fileId fileName [poll_interval_seconds]";
+    disc=disc+"\nfileId\t\tfile identifier useful for batch processing of multiple files";
+    disc=disc+"\nfileName\t\tfile absolute path";
+    console.error(disc);
 	process.exit(1);
+}
+
+var pwd=path.join(__dirname,'.');
+var pwdSongId=path.join(pwd,songId);
+
+console.log("Workig directory:%s", pwd);
+console.log("Files wildcard:%s*", pwdSongId);
+
+if(!fs.existsSync(pwdSongId)) {
+    fs.mkdirSync(pwdSongId);    
 }
 
 /// /1-Upload
@@ -86,14 +104,14 @@ aud.upload(songFile, {}, function(error, results) {
                                                         clearInterval( status );
                                                         /// 6-Preanalysis annotation
                                                         aud.annotation({ preanalysis_id : preanalysisId1 }, 
-                                                            './annotation_'+preanalysisId1+'.json', function(error, results) {
+                                                            path.join(pwdSongId,'annotation_pitch_'+preanalysisId1+'.json'), function(error, results) {
                                                             if(error) 
                                                                 console.error("%s", error.toString() );
                                                             else {
                                                                 var annotationFile1=results;
                                                                 console.log("annotation", results);
                                                                 aud.annotation({ preanalysis_id : preanalysisId2 }, 
-                                                                    './annotation_'+preanalysisId2+'.json', function(error, results) {
+                                                                    path.join(pwdSongId,'annotation_csnt_'+preanalysisId2+'.json'), function(error, results) {
                                                                     if(error) 
                                                                         console.error("%s", error.toString() );
                                                                     else {
@@ -107,7 +125,7 @@ aud.upload(songFile, {}, function(error, results) {
                                                                                 for(var key in annotation2) {
                                                                                     annotation1[key] = annotation2[key]
                                                                                 }
-                                                                                var configurationFile='./annotation_'+preanalysisId1+'_'+preanalysisId2+'.json';
+                                                                                var configurationFile=path.join(pwdSongId,'annotation_'+preanalysisId1+'_'+preanalysisId2+'.json');
                                                                                 FileUtil.writeToFileSync(configurationFile, JSON.stringify(annotation1));
                                                                                 if( FileUtil.checkFileSync(configurationFile) ) {
                                                                                     /// 8-upload merged annotations
@@ -139,7 +157,7 @@ aud.upload(songFile, {}, function(error, results) {
                                                                                                                 var extractedFileId=results.extracted_file_id;
                                                                                                                 /// 11-download extracted
                                                                                                                 aud.download({ pk : extractedFileId }, 
-                                                                                                                    './sample_extracted_'+extractedFileId+'.wav', function(error, results) {
+                                                                                                                    path.join(pwdSongId,'sample_extracted_'+extractedFileId+'.wav'), function(error, results) {
                                                                                                                     if(error) 
                                                                                                                         console.error("%s", error.toString() );
                                                                                                                     else {
