@@ -211,15 +211,25 @@ download ./sample_extracted_316525.wav
 
 ## Fully Automated Enhanced Workflow
 To run a fully automated enhanced worflow run the `workflow` example. The example will execute all steps from ehnanced workflow, performing both the preanalysis, downloading, merging and uploading the annotations files and downloading the extracted resulting file.
-To do this run command with a file identifier (useful for batch processing), an input wave file and status poll interval in seconds (optional).
+To do this run command with a file identifier (useful for batch processing), an input wave file, the output path and the poll interval in seconds (optional):
 
 ```
-$ node workflow 1234 sample.wave 5
+Usage: worflow fileId filePath outputPath [poll_interval_seconds]
+fileId		file identifier useful for batch processing of multiple files
+filePath		file absolute path
+outputPath	output files absolute path, defaults to script path
 ```
 
-So the output will be in the folder `./1234` with the following files:
+so we have
 
 ```
+$ node workflow 1234 sample.wave out/ 5
+```
+
+The analysis files will be in the folder `./out/1234`:
+
+```
+$ cd out/1234
 $ ls -l
 total 9432
 -rw-r--r--  1 admin  staff   267082 21 Nov 15:46 annotation_37168_37169.json
